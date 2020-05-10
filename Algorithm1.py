@@ -13,25 +13,34 @@ import cv2
 @brief      Application which detects and overlays road lanes in a video stream
 '''
 class Algorithm1:
-    K = np.array([])                    # Camera intrinsic matrix
-    distortionCoeffs = np.array([])     # Camera distortion coefficients
+    #K = np.array([])                    # Camera intrinsic matrix
+    #distortionCoeffs = np.array([])     # Camera distortion coefficients
 
     cropFactor = 0      # 0-1 value that represents percentage to crop from the top of a frame to isolate lanes
     cropLineY = 0       # cropFactor value in terms of pixels from the top of the frame
 
-    frame = np.array([])        # Current
+    frame = np.array([])       
     laneMask = np.array([])
 
-    yellowHSVLowBound = np.array([10, 70, 200])
-    yellowHSVUpperBound = np.array([65, 180, 255])
+    #yellowHSVLowBound = np.array([10, 70, 200])
+    #yellowHSVUpperBound = np.array([65, 180, 255])
 
-    whiteHSVLowBound = np.array([0, 0, 190])
-    whiteHSVUpperBound = np.array([170, 25, 255])
+    yellowHSVLowBound = np.array([10, 30, 140])
+    yellowHSVUpperBound = np.array([30, 255, 255])
+
+    #yellowHSVLowBound = np.array([10, 0, 200])
+    #yellowHSVUpperBound = np.array([30, 75, 255])
+
+    #whiteHSVLowBound = np.array([0, 0, 190])
+    #whiteHSVUpperBound = np.array([170, 25, 255])
+
+    whiteHSVLowBound = np.array([0, 0, 208])
+    whiteHSVUpperBound = np.array([255, 75, 255])
 
 
-    def __init__(self, K, distortionCoeffs, cropFactor):
-        self.K = K
-        self.distortionCoeffs = distortionCoeffs
+    def __init__(self, cropFactor):
+        #self.K = K
+        #self.distortionCoeffs = distortionCoeffs
         self.cropFactor = cropFactor
 
 
@@ -44,13 +53,14 @@ class Algorithm1:
         h = frame.shape[0]
         w = frame.shape[1]
 
-        newK, _ = cv2.getOptimalNewCameraMatrix(self.K, self.distortionCoeffs, \
-                                                 (w, h), 0, (w, h))
-        undistortedFrame = cv2.undistort(frame, self.K, self.distortionCoeffs, None, newK)
+        #newK, _ = cv2.getOptimalNewCameraMatrix(self.K, self.distortionCoeffs, (w, h), 0, (w, h))
+        #undistortedFrame = cv2.undistort(frame, self.K, self.distortionCoeffs, None, newK)
         
-        self.frame = undistortedFrame
+        #self.frame = undistortedFrame
 
-        blurredFrame = cv2.GaussianBlur(undistortedFrame, (5,5), 0)
+        self.frame = frame
+
+        blurredFrame = cv2.GaussianBlur(self.frame, (5,5), 0)
 
         self.cropLineY = int(self.cropFactor*h)
         croppedFrame = blurredFrame[self.cropLineY:h, :, :]
@@ -175,81 +185,42 @@ class Algorithm1:
                     color=(0,0,255), thickness=3)
 
         
-        '''scale = 1000 / w  # percent of original size
+        scale = 1000 / w  # percent of original size
         dim = (int(w * scale), int(h * scale))
         dimCropped = (int(self.laneMask.shape[1] * scale), int(self.laneMask.shape[0] * scale))
 
+        '''
         cv2.imshow("Frame", cv2.resize(outputFrame, dim))
         cv2.imshow("Mask", cv2.resize(self.laneMask, dimCropped))
-        cv2.waitKey(0)'''
+        cv2.waitKey(0)
+        '''
+
+        # Create binary image of lane
+        binaryImage = np.zeros((self.frame.shape[0], self.frame.shape[1]))
+        cv2.fillPoly(binaryImage, [laneMesh], color=(255, 255, 255))
         
-
-        return outputFrame
-
-
-    '''
-    @brief      Demonstration function to run the entire lane detection application with video
-    @param      
-    @return     
-    '''
-    def runApplication(self, videoFile, saveVideo=False):
-        # Create video stream object
-        videoCapture = cv2.VideoCapture(videoFile)
-        # videoCapture.set(cv2.CAP_PROP_BUFFERSIZE, 10)
         
-        # Define video codec and output file if video needs to be saved
-        if (saveVideo == True):
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            # 720p 30fps video
-            out = cv2.VideoWriter('LaneDetectionOutput.mp4', fourcc, 30, (1280, 720))
+        return outputFrame, binaryImage.astype('uint8')
+    
 
-        # Continue to process frames if the video stream object is open
-        while(videoCapture.isOpened()):
-            ret, frame = videoCapture.read()
+    def detectLane(self, frame):
+        preparedFrame = self.prepareImage(frame)
+        laneParams = self.getLaneLines(preparedFrame)
+        outputFrame, binaryImage = self.visualization(laneParams)
 
-            # Continue processing if a valid frame is received
-            if ret == True:
-                # Detect and visualize lanes
-                preparedFrame = laneDetector.prepareImage(frame)
-                laneParams = laneDetector.getLaneLines(preparedFrame)
-                outputFrame = laneDetector.visualization(laneParams)
-
-                #cv2.imwrite('sampleLane2.png', frame)
-
-                # Save video if desired, resizing frame to 720p
-                if (saveVideo == True):
-                    out.write(cv2.resize(outputFrame, (1280, 720)))
-                
-                # Display frame to the screen in a video preview
-                cv2.imshow("Frame", cv2.resize(outputFrame, (1280, 720)))
-
-                # Exit if the user presses 'q'
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-            
-            # If the end of the video is reached, wait for final user keypress and exit
-            else:
-                cv2.waitKey(0)
-                break
-        
-        # Release video and file object handles
-        videoCapture.release()
-        if (saveVideo == True):
-            out.release()
-        
-        print('Video and file handles closed')
+        return outputFrame, binaryImage
 
 
 
 if __name__ == '__main__':
-    
+    '''
     K = np.array([[9.037596e+02, 0.000000e+00, 6.957519e+02],
                    [0.000000e+00, 9.019653e+02, 2.242509e+02],
                    [0.000000e+00, 0.000000e+00, 1.000000e+00]])
 
     distortionCoeffs = np.array([-3.639558e-01, 1.788651e-01, 6.029694e-04, -3.922424e-04, -5.382460e-02])
 
-    '''
+    
     K = np.array([[1.15422732e+03, 0.00000000e+00, 6.71627794e+02],
                   [0.00000000e+00, 1.14818221e+03, 3.86046312e+02],
                   [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
@@ -267,14 +238,16 @@ if __name__ == '__main__':
     saveVideo = False
 
     # Run application
-    laneDetector = Algorithm1(K, distortionCoeffs, cropFactor)
+    laneDetector = Algorithm1(cropFactor)
     #laneDetector.runApplication(videoFile, saveVideo)
 
     
-    frame = cv2.imread('sampleLane.png')
-    preparedFrame = laneDetector.prepareImage(frame)
-    laneParams = laneDetector.getLaneLines(preparedFrame)
-    outputFrame = laneDetector.visualization(laneParams)
+    frame = cv2.imread('sampleLane2.png')
+    laneDetector.detectLane(frame)
+
+    # preparedFrame = laneDetector.prepareImage(frame)
+    # laneParams = laneDetector.getLaneLines(preparedFrame)
+    # outputFrame = laneDetector.visualization(laneParams)
     
     
 
