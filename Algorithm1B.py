@@ -38,7 +38,7 @@ class Algorithm1B:
     whiteHSVUpperBound = np.array([255, 75, 255])
 
 
-    def __init__(self, cropFactor):
+    def __init__(self, cropFactor=0.6):
         #self.K = K
         #self.distortionCoeffs = distortionCoeffs
         self.cropFactor = cropFactor

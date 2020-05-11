@@ -20,7 +20,7 @@ def recordClick(event, x, y, flags, param):
 
 
 # Read in image to crop
-image = cv2.imread('training_set/frame18.png')
+image = cv2.imread('dataset/images/um_000001.png')
 
 # Create window to detect mouse events
 cv2.namedWindow("Image", flags=cv2.WINDOW_NORMAL)

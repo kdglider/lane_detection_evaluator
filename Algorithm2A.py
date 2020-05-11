@@ -72,7 +72,6 @@ class Algorithm2A:
     def set_perspective_transform(self, img):
         # width = img.shape[1]
         height = img.shape[0]
-        print(height)
         
         '''
         src = np.array([[100, height],
@@ -80,10 +79,10 @@ class Algorithm2A:
                     [720, 300],
                     [720, height]], np.float32)
         '''
-        src = np.array([[100, height],
-                    [718, 233],
-                    [720, 233],
-                    [720, height]], np.float32)
+        src = np.array([[335, height],
+                    [540, 200],
+                    [645, 200],
+                    [935, height]], np.float32)
         
 
         dst = np.array([[300, height],
@@ -583,7 +582,7 @@ if __name__ == '__main__':
     # Run application
     laneDetector = Algorithm2A()
 
-    frame = cv2.imread('dataset/images/um_000000.png')
+    frame = cv2.imread('dataset/images/um_000030.png')
     output = laneDetector.detectLane(frame)
 
     print(output.shape)

@@ -69,7 +69,7 @@ class AlgorithmEvaluator:
         stop = time.perf_counter()
 
         # Record runtime
-        runTime = round(stop - start, 3)
+        runTime = stop - start
         self.runTimes[frameNumber] = runTime
         #print(runTime)
         
@@ -132,7 +132,7 @@ class AlgorithmEvaluator:
         self.totalScores[frameNumber] = totalScore
 
         # Mark frame as "pass" if the total score is above a threshold
-        self.passFailArray[frameNumber] = int(totalScore > 0.7)
+        self.passFailArray[frameNumber] = int(totalScore > 0.65)
 
 
     def runApplication(self, saveData=False):
@@ -157,37 +157,48 @@ class AlgorithmEvaluator:
                 sequenceStart = i
             else:
                 continue
+        
+        self.passSequenceLengths = np.array(self.passSequenceLengths)
 
         # Write data to Excel file if required
         if (saveData == True):
             workbook = xlsxwriter.Workbook('data.xlsx')
             worksheet = workbook.add_worksheet()
-            row = 0
+            row = 1
             col = 0
 
             worksheet.write(row, col,    'Run Time (s)')
-            worksheet.write(row, col+1,  'Precision')
-            worksheet.write(row, col+2,  'Recall')
-            worksheet.write(row, col+3,  'F-Measure')
-            worksheet.write(row, col+4,  'Accuracy')
-            worksheet.write(row, col+5,  'Total Accuracy Score')
+            worksheet.write(row+1, col,  'Precision')
+            worksheet.write(row+2, col,  'Recall')
+            worksheet.write(row+3, col,  'F-Measure')
+            worksheet.write(row+4, col,  'Accuracy')
+            worksheet.write(row+5, col,  'Total Accuracy Score')
+            worksheet.write(row+6, col,  'Frames Between Failures')
 
-            row += 1
+            row = 0
+            col = 1
 
-            for runTime, precision, recall, fmeasure, accuracy, totalScore \
-                in zip(self.runTimes, 
-                       self.precisionArray,
-                       self.recallArray,
-                       self.fmeasureArray,
-                       self.accuracyArray,
-                       self.totalScores):
-                
-                worksheet.write(row, col,    runTime)
-                worksheet.write(row, col+1,  precision)
-                worksheet.write(row, col+2,  recall)
-                worksheet.write(row, col+3,  fmeasure)
-                worksheet.write(row, col+4,  accuracy)
-                worksheet.write(row, col+5,  totalScore)
+            worksheet.write(row, col,    'Average')
+            worksheet.write(row, col+1,  'Standard Deviation')
+            worksheet.write(row, col+2,  'Maximum')
+            worksheet.write(row, col+3,  'Minimum')
+
+            row = 1
+            col = 1
+
+            dataList = [self.runTimes,
+                        self.precisionArray,
+                        self.recallArray,
+                        self.fmeasureArray,
+                        self.accuracyArray,
+                        self.totalScores,
+                        self.passSequenceLengths]
+
+            for data in dataList:
+                worksheet.write(row, col,    np.mean(data))
+                worksheet.write(row, col+1,  np.std(data))
+                worksheet.write(row, col+2,  np.max(data))
+                worksheet.write(row, col+3,  np.min(data))
 
                 row += 1
             
@@ -202,7 +213,7 @@ if __name__ == '__main__':
     gtFolder = 'dataset/ground_truth/'
 
     # Flag to save data
-    saveData = False
+    saveData = True
 
     # Lane detection algorithm class object
     algorithm = Algorithm2B()
@@ -222,7 +233,8 @@ if __name__ == '__main__':
     print(np.mean(evaluator.accuracyArray))
     print(np.mean(evaluator.totalScores))
     print(evaluator.passSequenceLengths)
-    print(sum(evaluator.passSequenceLengths)/len(evaluator.passSequenceLengths))
+    print(np.mean(evaluator.passSequenceLengths))
+    #print(sum(evaluator.passSequenceLengths)/len(evaluator.passSequenceLengths))
 
     
 

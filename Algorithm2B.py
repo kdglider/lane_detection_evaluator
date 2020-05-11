@@ -94,7 +94,8 @@ class Algorithm2B:
 
     def perspective_warp(self, img, 
                         dst_size=(1242,375),
-                        src=np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)]),
+                        #src=np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)]),
+                        src=np.float32([(0.43,0.53),(0.52,0.53),(0.27,1),(0.75,1)]),
                         dst=np.float32([(0,0), (1, 0), (0,1), (1,1)])):
         img_size = np.float32([(img.shape[1],img.shape[0])])
         src = src* img_size
@@ -111,7 +112,8 @@ class Algorithm2B:
     def inv_perspective_warp(self, img, 
                         dst_size=(1242,375),
                         src=np.float32([(0,0), (1, 0), (0,1), (1,1)]),
-                        dst=np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)])):
+                        #dst=np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)]),
+                        dst=np.float32([(0.43,0.53),(0.52,0.53),(0.27,1),(0.75,1)]),):
         img_size = np.float32([(img.shape[1],img.shape[0])])
         src = src* img_size
         # For destination points, I'm arbitrarily choosing some points to be

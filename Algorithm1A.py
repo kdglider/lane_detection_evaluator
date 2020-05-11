@@ -36,6 +36,8 @@ class Algorithm1A:
         # Creates a triangular polygon for the mask defined by three (x, y) coordinates
         polygons = np.array([
                                 [(0, height), (1200, height), (1000,200), (400,200)]
+                                #[(335, height), (935, height), (645,200), (540,200)]
+                                #[(275, height), (995, height), (705,200), (480,200)]
                             ])
         # Creates an image filled with zero intensities with the same dimensions as the frame
         mask = np.zeros_like(frame)
@@ -69,6 +71,9 @@ class Algorithm1A:
                 right.append((slope, y_intercept))
         # Averages out all the values for left and right into a single slope and y-intercept value for each line
         
+        if (len(left) == 0 or len(right) == 0):
+            return np.array([])
+
         left_avg = np.average(left, axis = 0)
         right_avg = np.average(right, axis = 0)
         # Calculates the x1, y1, x2, y2 coordinates for the left and right lines
@@ -99,6 +104,8 @@ class Algorithm1A:
         #print(lines)
         if lines is not None:
             for x1, y1, x2, y2 in lines:
+                #x1 = max(min(x1, frame.shape[1]), 0)
+                #x2 = max(min(x2, frame.shape[0]), 0)
                 # Draws lines between two coordinates with green color and 5 thickness
                 cv2.line(lines_visualize, (x1, y1), (x2, y2), (0, 255, 0), 5)
                 #laneboundary = (x1,y1),(x2,y2)
@@ -125,11 +132,21 @@ class Algorithm1A:
         #border =[(lines[0][0], lines[0][1]),(lines[0][2], lines[0][3]),(lines[1][0], lines[1][1]),(lines[1][2], lines[1][3])]
         #border = np.array(border)
 
+        output = np.zeros_like(frame)
+
+        if (len(lines) == 0):
+            return cv2.cvtColor(output, cv2.COLOR_RGB2GRAY)
+
         # Visualizes the lines
         [lines_visualize, boundary] = self.visualize_lines(frame, lines)
-        #print(laneboundary)
-        output = np.zeros_like(lines_visualize)
-        cv2.fillConvexPoly(output,np.int32([boundary]),(255, 255,255))
+
+        temp0 = boundary[0].copy()
+        temp1 = boundary[1].copy()
+        boundary[0] = temp1
+        boundary[1] = temp0
+        
+        
+        cv2.fillPoly(output,np.int32([boundary]),(255, 255,255))
 
         return cv2.cvtColor(output, cv2.COLOR_RGB2GRAY)
 
@@ -139,7 +156,7 @@ if __name__ == '__main__':
     # Run application
     laneDetector = Algorithm1A()
 
-    frame = cv2.imread('dataset/images/um_000000.png')
+    frame = cv2.imread('dataset/images/um_000010.png')
     output = laneDetector.detectLane(frame)
 
     print(output.shape)
