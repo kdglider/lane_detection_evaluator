@@ -231,16 +231,8 @@ if __name__ == '__main__':
     # How much to crop a frame from the top to isolate the road
     cropFactor = 0.5
 
-    # Select video file
-    videoFile = 'sample_data1/video1.mp4'
-
-    # Choose whether or not to save the output video
-    saveVideo = False
-
     # Run application
     laneDetector = Algorithm1B(cropFactor)
-    #laneDetector.runApplication(videoFile, saveVideo)
-
     
     frame = cv2.imread('sampleLane2.png')
     laneDetector.detectLane(frame)
