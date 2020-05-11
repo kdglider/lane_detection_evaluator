@@ -13,7 +13,8 @@ import xlsxwriter
 import numpy as np
 import cv2
 
-from Algorithm1 import Algorithm1
+from Algorithm1A import Algorithm1A
+from Algorithm1B import Algorithm1B
 
 '''
 @brief      
@@ -27,7 +28,8 @@ class AlgorithmEvaluator:
 
     runTimes = None         # Array of runtimes for all test images
 
-    passFailArray = None    # Array of pass/fail indicators for all images
+    passFailArray = None        # Array of pass/fail indicators for all images
+    passSequenceLengths = []    # List of detection success sequence lengths
 
     precisionArray = None   # Array of precission scores
     recallArray = None      # Array of recall scores
@@ -37,8 +39,8 @@ class AlgorithmEvaluator:
 
     
 
-    def __init__(self, Algorithm, imageFolder, gtFolder):
-        self.algorithm = Algorithm(0.5)
+    def __init__(self, algorithm, imageFolder, gtFolder):
+        self.algorithm = algorithm
 
         self.imageFolder = imageFolder
         self.gtFolder = gtFolder
@@ -59,7 +61,7 @@ class AlgorithmEvaluator:
         start = time.perf_counter()
 
         # Run algorithm on frame
-        output, binaryOutput = self.algorithm.detectLane(frame)
+        binaryOutput = self.algorithm.detectLane(frame)
 
         # Stop timer
         stop = time.perf_counter()
@@ -129,8 +131,8 @@ class AlgorithmEvaluator:
 
 
     def runApplication(self, saveData=False):
+        # Evaluate algorithm on all images in the dataset
         frameNumber = 0
-
         for imageName, gtName in zip(os.listdir(self.imageFolder), os.listdir(self.gtFolder)):
             image = cv2.imread(self.imageFolder + imageName)
             gt = cv2.imread(self.gtFolder + gtName, 0)
@@ -144,6 +146,17 @@ class AlgorithmEvaluator:
 
             frameNumber += 1
         
+
+        # Calculate mean frames between failures
+        sequenceStart = 0
+        for i in range(1, len(self.passFailArray)):
+            if (self.passFailArray[i] == False):
+                self.passSequenceLengths.append(i - sequenceStart - 1)
+                sequenceStart = i
+            else:
+                continue
+
+        # Write data to Excel file if required
         if (saveData == True):
             workbook = xlsxwriter.Workbook('data.xlsx')
             worksheet = workbook.add_worksheet()
@@ -187,16 +200,25 @@ if __name__ == '__main__':
     gtFolder = 'dataset/ground_truth/'
 
     # Flag to save data
-    saveData = True
+    saveData = False
 
-    frame = cv2.imread(imageFolder + 'um_000084.png')
-    gt = cv2.imread(gtFolder + 'um_lane_000084.png', 0)
+    # Lane detection algorithm class object
+    algorithm = Algorithm1A()
+
+    frame = cv2.imread(imageFolder + 'um_000000.png')
+    gt = cv2.imread(gtFolder + 'um_lane_000000.png', 0)
 
     # Run application
-    evaluator = AlgorithmEvaluator(Algorithm1, imageFolder, gtFolder)
+    evaluator = AlgorithmEvaluator(algorithm, imageFolder, gtFolder)
+    #evaluator.evaluate(frame, gt, 0)
     evaluator.runApplication(saveData)
 
-    #evaluator.evaluate(frame, gt, 0)
+    print(np.mean(evaluator.runTimes))
+    print(np.mean(evaluator.totalScores))
+    print(evaluator.passSequenceLengths)
+    print(sum(evaluator.passSequenceLengths)/len(evaluator.passSequenceLengths))
+
+    
 
 
 

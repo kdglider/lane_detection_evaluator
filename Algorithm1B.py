@@ -1,6 +1,6 @@
 '''
 Copyright (c) 2020 Hao Da (Kevin) Dong
-@file       Algorithm1.py
+@file       Algorithm1B.py
 @date       2020/03/08
 @brief      Lane detection application
 @license    This project is released under the BSD-3-Clause license.
@@ -12,7 +12,7 @@ import cv2
 '''
 @brief      Application which detects and overlays road lanes in a video stream
 '''
-class Algorithm1:
+class Algorithm1B:
     #K = np.array([])                    # Camera intrinsic matrix
     #distortionCoeffs = np.array([])     # Camera distortion coefficients
 
@@ -208,7 +208,7 @@ class Algorithm1:
         laneParams = self.getLaneLines(preparedFrame)
         outputFrame, binaryImage = self.visualization(laneParams)
 
-        return outputFrame, binaryImage
+        return binaryImage
 
 
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     saveVideo = False
 
     # Run application
-    laneDetector = Algorithm1(cropFactor)
+    laneDetector = Algorithm1B(cropFactor)
     #laneDetector.runApplication(videoFile, saveVideo)
 
     
