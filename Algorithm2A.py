@@ -72,10 +72,17 @@ class Algorithm2A:
     def set_perspective_transform(self, img):
         # width = img.shape[1]
         height = img.shape[0]
+        print(height)
         
+        '''
         src = np.array([[100, height],
                     [480, 300],
                     [720, 300],
+                    [720, height]], np.float32)
+        '''
+        src = np.array([[100, height],
+                    [718, 233],
+                    [720, 233],
                     [720, height]], np.float32)
         
 
@@ -556,14 +563,19 @@ class Algorithm2A:
         lanes = cv2.cvtColor(lanes, cv2.COLOR_RGB2BGR)
         (height, width, channels) = lanes.shape
 
+        '''
         for x in range(height) :
             for y in range(width):
                 if lanes[x,y,0] == 255 and lanes[x,y,1] ==255 and lanes[x,y,2]==255 :
                     break
                 else :
                     lanes[x,y] = [0, 0, 0]
+        '''
+
+        output = cv2.inRange(lanes, (255,255,255), (255,255,255))
         
-        return cv2.cvtColor(lanes, cv2.COLOR_RGB2GRAY)
+        #return cv2.cvtColor(lanes, cv2.COLOR_RGB2GRAY)
+        return output
 
 
 

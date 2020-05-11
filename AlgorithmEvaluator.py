@@ -15,6 +15,8 @@ import cv2
 
 from Algorithm1A import Algorithm1A
 from Algorithm1B import Algorithm1B
+from Algorithm2A import Algorithm2A
+from Algorithm2B import Algorithm2B
 
 '''
 @brief      
@@ -70,6 +72,9 @@ class AlgorithmEvaluator:
         runTime = round(stop - start, 3)
         self.runTimes[frameNumber] = runTime
         #print(runTime)
+        
+        # Ensure the image and ground truth are the same size
+        gt = cv2.resize(gt, (binaryOutput.shape[1], binaryOutput.shape[0]))
         
         '''
         print(binaryOutput.shape)
@@ -137,9 +142,6 @@ class AlgorithmEvaluator:
             image = cv2.imread(self.imageFolder + imageName)
             gt = cv2.imread(self.gtFolder + gtName, 0)
 
-            # Ensure the image and ground truth are the same size
-            gt = cv2.resize(gt, (image.shape[1], image.shape[0]))
-
             #print(frameNumber)
 
             self.evaluate(image, gt, frameNumber)
@@ -203,10 +205,10 @@ if __name__ == '__main__':
     saveData = False
 
     # Lane detection algorithm class object
-    algorithm = Algorithm1A()
+    algorithm = Algorithm2B()
 
-    frame = cv2.imread(imageFolder + 'um_000000.png')
-    gt = cv2.imread(gtFolder + 'um_lane_000000.png', 0)
+    frame = cv2.imread(imageFolder + 'um_000084.png')
+    gt = cv2.imread(gtFolder + 'um_lane_000084.png', 0)
 
     # Run application
     evaluator = AlgorithmEvaluator(algorithm, imageFolder, gtFolder)
@@ -214,6 +216,10 @@ if __name__ == '__main__':
     evaluator.runApplication(saveData)
 
     print(np.mean(evaluator.runTimes))
+    print(np.mean(evaluator.precisionArray))
+    print(np.mean(evaluator.recallArray))
+    print(np.mean(evaluator.fmeasureArray))
+    print(np.mean(evaluator.accuracyArray))
     print(np.mean(evaluator.totalScores))
     print(evaluator.passSequenceLengths)
     print(sum(evaluator.passSequenceLengths)/len(evaluator.passSequenceLengths))
